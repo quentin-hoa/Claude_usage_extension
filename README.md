@@ -1,6 +1,6 @@
 # Claude Usage Stats
 
-A lightweight system bar overlay that shows your **Claude AI session and weekly usage** in real time — for Ubuntu, macOS, and Windows.
+A lightweight system bar overlay that shows your **Claude AI session and weekly usage** in real time — for Ubuntu, macOS, and Windows. You can also click on the "Manage usage on claude.ai"
 
 Inspired by the usage panel in the Claude Code VS Code extension.
 
@@ -8,13 +8,9 @@ Inspired by the usage panel in the Claude Code VS Code extension.
 
 ## Preview
 
-> Add your own screenshots here and open a PR!
+<img src="overlay.png" alt="Ubuntu version" height="200">
+<img src="small_overlay.png" alt="Small overlay" height="50">
 
-| Platform | Bar indicator | Popup / Menu |
-|----------|--------------|--------------|
-| Ubuntu (GNOME) | *(placeholder — add screenshot)* | *(placeholder — add screenshot)* |
-| macOS (xbar) | *(placeholder — add screenshot)* | *(placeholder — add screenshot)* |
-| Windows (tray) | *(placeholder — add screenshot)* | *(placeholder — add screenshot)* |
 
 The popup / dropdown shows:
 
@@ -47,18 +43,6 @@ Manage usage on claude.ai
 
 ---
 
-## Security
-
-| What | Detail |
-|------|--------|
-| Token storage | `~/.claude/.credentials.json` — on your disk only, never in this repo |
-| Network calls | Only to `claude.ai` (Anthropic's official servers) |
-| `.gitignore` | Blocks any `*.credentials.json` from ever being committed |
-| Auditable | All fetch logic lives in `shared/fetch_usage.py` — ~60 lines, zero third-party deps |
-
-> ⚠️ **Never share your `~/.claude/.credentials.json` file.** This repo contains no credentials whatsoever.
-
----
 
 ## Prerequisites (all platforms)
 
@@ -241,13 +225,4 @@ Claude_usage_extension_Ubuntu/
 
 ## Contributing
 
-PRs welcome — especially:
-- Screenshots for the preview table above
-- KDE Plasma / XFCE support
-- A native Swift app for macOS (no xbar dependency)
-
----
-
-## License
-
-MIT
+Quentin HOARAU
