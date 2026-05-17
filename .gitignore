@@ -1,0 +1,22 @@
+# NEVER commit credentials
+.credentials.json
+*.credentials.json
+secrets.*
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# Logs
+*.log

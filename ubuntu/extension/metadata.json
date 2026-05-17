@@ -1,0 +1,8 @@
+{
+  "name": "Claude Usage Stats",
+  "description": "Shows Claude AI session and weekly usage in the GNOME top bar",
+  "uuid": "claude-usage-stats@community",
+  "shell-version": ["46"],
+  "version": 1,
+  "url": "https://github.com/YOUR_USERNAME/Claude_usage_extension_Ubuntu"
+}

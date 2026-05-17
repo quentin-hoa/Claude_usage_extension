@@ -1,0 +1,17 @@
+.claude-stats-menu {
+    background-color: #1a1a2e;
+    border: 1px solid #2e2e4e;
+    border-radius: 8px;
+    padding: 0;
+}
+
+.claude-stats-item {
+    background-color: #1a1a2e;
+    border-radius: 8px;
+    padding: 0;
+}
+
+.claude-stats-item:hover,
+.claude-stats-item:focus {
+    background-color: #1a1a2e;
+}
