@@ -18,12 +18,24 @@ except ImportError:
     print("Missing dependencies. Run: pip install pystray pillow")
     sys.exit(1)
 
-# Add shared fetch_usage module
-sys.path.insert(0, str(Path(__file__).parent.parent / "shared"))
+# Locate fetch_usage.py:
+# 1. Installed location (preferred): %USERPROFILE%\.local\share\claude-usage-stats\
+# 2. Fallback: sibling shared/ folder in the repo (for running directly from repo)
+_INSTALLED = Path.home() / ".local" / "share" / "claude-usage-stats"
+_REPO_SHARED = Path(__file__).parent.parent / "shared"
+
+if (_INSTALLED / "fetch_usage.py").exists():
+    sys.path.insert(0, str(_INSTALLED))
+elif (_REPO_SHARED / "fetch_usage.py").exists():
+    sys.path.insert(0, str(_REPO_SHARED))
+else:
+    print("Cannot find fetch_usage.py. Run install.bat first.")
+    sys.exit(1)
+
 try:
     from fetch_usage import get_stats
-except ImportError:
-    print("Cannot find shared/fetch_usage.py. Run from the repo root or install correctly.")
+except ImportError as e:
+    print(f"Import error: {e}")
     sys.exit(1)
 
 CLAUDE_USAGE_URL = "https://claude.ai/settings/usage"
@@ -32,14 +44,11 @@ ICON_SIZE = 64
 
 
 def make_icon(sess_pct: int, week_pct: int) -> Image.Image:
-    """Draw a small icon with the session % shown."""
     img = Image.new("RGBA", (ICON_SIZE, ICON_SIZE), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
-    # Background circle
     draw.ellipse([2, 2, ICON_SIZE - 2, ICON_SIZE - 2], fill="#1a1a2e")
 
-    # Pick color based on highest usage
     max_pct = max(sess_pct, week_pct)
     if max_pct >= 90:
         color = "#ff4444"
@@ -48,28 +57,28 @@ def make_icon(sess_pct: int, week_pct: int) -> Image.Image:
     else:
         color = "#DA7756"
 
-    # Arc showing session usage
     if sess_pct > 0:
         angle = int(360 * min(sess_pct, 100) / 100)
-        draw.arc([6, 6, ICON_SIZE - 6, ICON_SIZE - 6], start=-90, end=-90 + angle,
-                 fill=color, width=6)
+        draw.arc(
+            [6, 6, ICON_SIZE - 6, ICON_SIZE - 6],
+            start=-90, end=-90 + angle,
+            fill=color, width=6,
+        )
 
-    # Text: session %
     text = f"{sess_pct}%"
-    try:
-        font = ImageFont.truetype("arial.ttf", 16)
-    except Exception:
+    font = None
+    for font_name in ("arial.ttf", "Arial.ttf", "segoeui.ttf", "calibri.ttf"):
+        try:
+            font = ImageFont.truetype(font_name, 16)
+            break
+        except Exception:
+            continue
+    if font is None:
         font = ImageFont.load_default()
 
     bbox = draw.textbbox((0, 0), text, font=font)
-    tw = bbox[2] - bbox[0]
-    th = bbox[3] - bbox[1]
-    draw.text(
-        ((ICON_SIZE - tw) // 2, (ICON_SIZE - th) // 2),
-        text,
-        fill="#e0e0e0",
-        font=font,
-    )
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    draw.text(((ICON_SIZE - tw) // 2, (ICON_SIZE - th) // 2), text, fill="#e0e0e0", font=font)
     return img
 
 
@@ -78,32 +87,36 @@ class ClaudeUsageTray:
         self._stats = None
         self._error = None
         self._icon = None
+        self._lock = threading.Lock()
 
     def _fetch(self):
         try:
-            self._stats = get_stats()
-            self._error = None
+            stats = get_stats()
+            with self._lock:
+                self._stats = stats
+                self._error = None
         except Exception as e:
-            self._error = str(e)
-            self._stats = None
+            with self._lock:
+                self._error = str(e)
+                self._stats = None
 
     def _build_menu(self):
-        items = []
+        with self._lock:
+            stats = self._stats
+            error = self._error
 
-        if self._error:
-            items.append(pystray.MenuItem(f"Error: {self._error}", None, enabled=False))
-        elif self._stats:
-            s = self._stats
+        items = []
+        if error:
+            items.append(pystray.MenuItem(f"Error: {error}", None, enabled=False))
+        elif stats:
+            sp = stats["session_pct"]
+            wp = stats["weekly_pct"]
+            sr = stats["session_resets_in"] or "?"
+            wr = stats["weekly_resets_in"] or "?"
             items += [
-                pystray.MenuItem("USAGE", None, enabled=False),
-                pystray.MenuItem(
-                    f"Session (5hr):  {s['session_pct']}%  — resets in {s['session_resets_in'] or '?'}",
-                    None, enabled=False
-                ),
-                pystray.MenuItem(
-                    f"Weekly (7 day): {s['weekly_pct']}%  — resets in {s['weekly_resets_in'] or '?'}",
-                    None, enabled=False
-                ),
+                pystray.MenuItem("── USAGE ──", None, enabled=False),
+                pystray.MenuItem(f"Session (5hr):   {sp}%  —  resets in {sr}", None, enabled=False),
+                pystray.MenuItem(f"Weekly (7 day):  {wp}%  —  resets in {wr}", None, enabled=False),
             ]
         else:
             items.append(pystray.MenuItem("Loading...", None, enabled=False))
@@ -111,7 +124,7 @@ class ClaudeUsageTray:
         items += [
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Manage usage on claude.ai", self._open_browser),
-            pystray.MenuItem("Refresh now", self._refresh),
+            pystray.MenuItem("Refresh now", self._on_refresh),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Quit", self._quit),
         ]
@@ -120,23 +133,27 @@ class ClaudeUsageTray:
     def _open_browser(self, icon=None, item=None):
         webbrowser.open(CLAUDE_USAGE_URL)
 
-    def _refresh(self, icon=None, item=None):
+    def _on_refresh(self, icon=None, item=None):
+        threading.Thread(target=self._fetch_and_update, daemon=True).start()
+
+    def _fetch_and_update(self):
         self._fetch()
-        self._update_icon()
+        self._apply_to_icon()
 
     def _quit(self, icon=None, item=None):
         self._icon.stop()
 
-    def _update_icon(self):
-        if self._stats:
-            img = make_icon(self._stats["session_pct"], self._stats["weekly_pct"])
-            sp = self._stats["session_pct"]
-            wp = self._stats["weekly_pct"]
-            title = f"Claude Usage — Session: {sp}%  Weekly: {wp}%"
+    def _apply_to_icon(self):
+        if self._icon is None:
+            return
+        with self._lock:
+            stats = self._stats
+        if stats:
+            img = make_icon(stats["session_pct"], stats["weekly_pct"])
+            title = f"Claude — Session: {stats['session_pct']}%  Weekly: {stats['weekly_pct']}%"
         else:
             img = make_icon(0, 0)
-            title = "Claude Usage — Error"
-
+            title = "Claude Usage — Error (hover for details)"
         self._icon.icon = img
         self._icon.title = title
         self._icon.menu = self._build_menu()
@@ -144,23 +161,22 @@ class ClaudeUsageTray:
     def _refresh_loop(self):
         while True:
             time.sleep(REFRESH_SECONDS)
-            self._fetch()
-            self._update_icon()
+            self._fetch_and_update()
 
     def run(self):
         self._fetch()
-        img = make_icon(
-            self._stats["session_pct"] if self._stats else 0,
-            self._stats["weekly_pct"] if self._stats else 0,
-        )
+        with self._lock:
+            stats = self._stats
+        sp = stats["session_pct"] if stats else 0
+        wp = stats["weekly_pct"] if stats else 0
+
         self._icon = pystray.Icon(
             "claude-usage",
-            img,
+            make_icon(sp, wp),
             title="Claude Usage Stats",
             menu=self._build_menu(),
         )
-        t = threading.Thread(target=self._refresh_loop, daemon=True)
-        t.start()
+        threading.Thread(target=self._refresh_loop, daemon=True).start()
         self._icon.run()
 
 

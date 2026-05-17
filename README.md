@@ -8,15 +8,15 @@ Inspired by the usage panel in the Claude Code VS Code extension.
 
 ## Preview
 
-> Screenshots coming soon — contributions welcome!
+> Add your own screenshots here and open a PR!
 
 | Platform | Bar indicator | Popup / Menu |
 |----------|--------------|--------------|
-| Ubuntu (GNOME) | *(placeholder)* | *(placeholder)* |
-| macOS (xbar) | *(placeholder)* | *(placeholder)* |
-| Windows (tray) | *(placeholder)* | *(placeholder)* |
+| Ubuntu (GNOME) | *(placeholder — add screenshot)* | *(placeholder — add screenshot)* |
+| macOS (xbar) | *(placeholder — add screenshot)* | *(placeholder — add screenshot)* |
+| Windows (tray) | *(placeholder — add screenshot)* | *(placeholder — add screenshot)* |
 
-The popup shows:
+The popup / dropdown shows:
 
 ```
 USAGE
@@ -40,10 +40,10 @@ Manage usage on claude.ai
 
 1. Reads your **OAuth access token** from `~/.claude/.credentials.json`  
    (created automatically by the Claude Code CLI when you log in)
-2. Calls `https://claude.ai/api/oauth/usage` — the same endpoint used by the VS Code extension
+2. Calls `https://claude.ai/api/oauth/usage` — the same private endpoint used by the VS Code extension
 3. Displays the returned `five_hour` (session) and `seven_day` (weekly) utilisation percentages
 
-**Your token never leaves your machine.** No data is sent anywhere except the official `claude.ai` API.
+**Your token never leaves your machine.** The only outbound request is to `claude.ai` (Anthropic's own servers).
 
 ---
 
@@ -52,11 +52,11 @@ Manage usage on claude.ai
 | What | Detail |
 |------|--------|
 | Token storage | `~/.claude/.credentials.json` — on your disk only, never in this repo |
-| Network calls | Only to `claude.ai` (Anthropic's own servers) |
-| `.gitignore` | Blocks any `*.credentials.json` file from being committed |
-| Open source | All fetch logic is in `shared/fetch_usage.py` — readable in 60 lines |
+| Network calls | Only to `claude.ai` (Anthropic's official servers) |
+| `.gitignore` | Blocks any `*.credentials.json` from ever being committed |
+| Auditable | All fetch logic lives in `shared/fetch_usage.py` — ~60 lines, zero third-party deps |
 
-> **Never share your `~/.claude/.credentials.json` file.** This repo contains no credentials.
+> ⚠️ **Never share your `~/.claude/.credentials.json` file.** This repo contains no credentials whatsoever.
 
 ---
 
@@ -66,7 +66,8 @@ Manage usage on claude.ai
   → [https://claude.ai/code](https://claude.ai/code)  
   After install, run `claude` once to authenticate. This creates `~/.claude/.credentials.json`.
 
-- **Python 3.8+** (`python3 --version` to check)
+- **Python 3.8+**  
+  Check: `python3 --version` (Linux/macOS) or `python --version` (Windows)
 
 ---
 
@@ -74,7 +75,7 @@ Manage usage on claude.ai
 
 ### Ubuntu / GNOME (GNOME Shell 45+)
 
-**Requirements:** Ubuntu 22.04+ with GNOME Shell 45 or 46
+**Requirements:** Ubuntu 22.04+ · GNOME Shell 45 or 46
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/Claude_usage_extension_Ubuntu.git
@@ -93,33 +94,37 @@ Enable the extension:
 gnome-extensions enable claude-usage-stats@community
 ```
 
-The `◆ 50% | 5%` indicator will appear in the top-right of your panel. Click it to open the usage popup.
+The `◆ 50% | 5%` indicator appears in the top-right panel. Click to open the usage popup.
 
 ---
 
-### macOS (via xbar)
+### macOS (via xbar or SwiftBar)
 
-**Requirements:** macOS 11+ · [xbar](https://xbarapp.com/) installed
+**Requirements:** macOS 11+ · [xbar](https://xbarapp.com/) **or** [SwiftBar](https://swiftbar.app/) installed
+
+Both xbar and SwiftBar are supported — the plugin format is compatible with both.
 
 ```bash
-# Install xbar (if not already installed)
+# Install xbar (recommended)
 brew install --cask xbar
+# OR: brew install --cask swiftbar
 
-# Open xbar once to initialise the plugins folder, then:
+# Open xbar/SwiftBar once to initialise the plugins folder, then:
 git clone https://github.com/YOUR_USERNAME/Claude_usage_extension_Ubuntu.git
 cd Claude_usage_extension_Ubuntu
 bash macos/install.sh
 ```
 
-Refresh xbar: click any menu bar plugin → **Refresh All**.
+Refresh: click any menu bar item → **Refresh All** (xbar) or **Refresh Plugin** (SwiftBar).
 
-The `◆ 50% | 5%` indicator will appear in your macOS menu bar.
+The `◆ 50% · 5%` indicator appears in your macOS menu bar.  
+*(Note: `·` is used as separator — xbar reserves `|` for its own attribute syntax.)*
 
 ---
 
 ### Windows (system tray)
 
-**Requirements:** Windows 10/11 · Python 3.8+
+**Requirements:** Windows 10/11 · Python 3.8+ from [python.org](https://python.org) (not the Windows Store version)
 
 ```batch
 git clone https://github.com/YOUR_USERNAME/Claude_usage_extension_Ubuntu.git
@@ -129,7 +134,8 @@ windows\install.bat
 
 The install script:
 1. Installs `pystray` and `Pillow` via pip
-2. Creates a startup entry so the tray icon launches automatically on login
+2. Copies `fetch_usage.py` to `%USERPROFILE%\.local\share\claude-usage-stats\`
+3. Creates a startup `.vbs` entry so the tray icon launches automatically on login
 
 To start immediately without rebooting:
 
@@ -137,7 +143,10 @@ To start immediately without rebooting:
 pythonw windows\claude_usage_tray.py
 ```
 
-Right-click the tray icon to see your usage or open `claude.ai/settings/usage`.
+Right-click the tray icon to see usage stats or open `claude.ai/settings/usage`.
+
+> **Note:** Keep the cloned repo folder in place — the startup shortcut points to it.  
+> On Windows, credentials are read from `%USERPROFILE%\.claude\.credentials.json`.
 
 ---
 
@@ -147,55 +156,59 @@ Right-click the tray icon to see your usage or open `claude.ai/settings/usage`.
 ```bash
 gnome-extensions disable claude-usage-stats@community
 rm -rf ~/.local/share/gnome-shell/extensions/claude-usage-stats@community
-rm ~/.local/bin/claude-usage-stats.sh
+rm -f ~/.local/bin/claude-usage-stats.sh
 rm -rf ~/.local/share/claude-usage-stats
 ```
 
 ### macOS
 ```bash
+# xbar
 rm "$HOME/Library/Application Support/xbar/plugins/claude-usage.1m.sh"
+# SwiftBar
+rm "$HOME/Library/Application Support/SwiftBar/Plugins/claude-usage.1m.sh"
+
 rm -rf ~/.local/share/claude-usage-stats
 ```
 
 ### Windows
-Delete `claude-usage-tray.vbs` from `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup`  
-and optionally `pip uninstall pystray Pillow`.
+1. Delete `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\claude-usage-tray.vbs`
+2. Optionally: `pip uninstall pystray Pillow`
+3. Delete the cloned repo folder
 
 ---
 
 ## Configuration
 
-The refresh interval and icon behaviour are configurable:
-
-| File | Variable | Default |
-|------|----------|---------|
+| File | What to change | Default |
+|------|---------------|---------|
 | `ubuntu/extension/extension.js` | `REFRESH_SECONDS` | `60` |
-| `macos/claude-usage.1m.sh` | filename (`1m`) | 1 minute |
+| `macos/claude-usage.1m.sh` | rename file (`1m` → `30s`, `5m`, etc.) | 1 minute |
 | `windows/claude_usage_tray.py` | `REFRESH_SECONDS` | `60` |
 
-For macOS, rename the plugin file to change the refresh interval:  
-`claude-usage.30s.sh` = every 30 seconds, `claude-usage.5m.sh` = every 5 minutes.
+For macOS, xbar/SwiftBar use the filename to set the refresh interval:  
+`claude-usage.30s.sh` → every 30 s · `claude-usage.5m.sh` → every 5 min
 
 ---
 
 ## Troubleshooting
 
 **"Credentials not found"**  
-→ Run `claude` in your terminal and complete the login flow. The file `~/.claude/.credentials.json` must exist.
+→ Run `claude` in your terminal and complete the login flow.  
+The file `~/.claude/.credentials.json` (or `%USERPROFILE%\.claude\.credentials.json` on Windows) must exist.
 
 **Extension doesn't appear (Ubuntu)**  
-→ Make sure you reloaded GNOME Shell after install, then ran `gnome-extensions enable claude-usage-stats@community`.
+→ Reload GNOME Shell first, then run `gnome-extensions enable claude-usage-stats@community`.
 
-**Error / spinner that never resolves**  
-→ Test the fetch script directly:
+**Error / nothing displays**  
+→ Test the fetch script directly from the repo root:
 ```bash
 python3 shared/fetch_usage.py
-# Should print JSON like: {"session_pct": 50, "weekly_pct": 5, ...}
+# Expected: {"session_pct": 50, "weekly_pct": 5, "session_resets_in": "3h 0m", ...}
 ```
-If it errors, your token may be expired. Re-run `claude` to refresh it.
+If it errors, your token may be expired — re-run `claude` once to refresh it.
 
 **Token expired**  
-→ Simply open and use `claude` CLI once. It auto-refreshes the token.
+→ Open any `claude` CLI session. It auto-refreshes the token.
 
 ---
 
@@ -204,23 +217,23 @@ If it errors, your token may be expired. Re-run `claude` to refresh it.
 ```
 Claude_usage_extension_Ubuntu/
 ├── shared/
-│   └── fetch_usage.py          # Core API fetch logic (used by all platforms)
+│   └── fetch_usage.py          # Core API fetch — used by all 3 platforms, zero deps
 ├── ubuntu/
-│   ├── extension/              # GNOME Shell extension files
-│   │   ├── extension.js
+│   ├── extension/
+│   │   ├── extension.js        # GNOME Shell 45/46 extension
 │   │   ├── metadata.json
 │   │   ├── stylesheet.css
 │   │   └── claude-logo.svg
-│   ├── claude-usage-stats.sh   # Wrapper script called by the extension
+│   ├── claude-usage-stats.sh   # Thin wrapper (replaced by install.sh with absolute path)
 │   └── install.sh
 ├── macos/
-│   ├── claude-usage.1m.sh      # xbar plugin
+│   ├── claude-usage.1m.sh      # xbar / SwiftBar plugin
 │   └── install.sh
 ├── windows/
 │   ├── claude_usage_tray.py    # Python system tray app
 │   ├── requirements.txt
 │   └── install.bat
-├── .gitignore                  # Blocks credentials from being committed
+├── .gitignore
 └── README.md
 ```
 
@@ -229,9 +242,9 @@ Claude_usage_extension_Ubuntu/
 ## Contributing
 
 PRs welcome — especially:
-- Screenshots for the preview table
-- Support for other desktop environments (KDE Plasma, etc.)
-- A SwiftBar variant for macOS
+- Screenshots for the preview table above
+- KDE Plasma / XFCE support
+- A native Swift app for macOS (no xbar dependency)
 
 ---
 
