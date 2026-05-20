@@ -62,7 +62,7 @@ Manage usage on claude.ai
 **Requirements:** Ubuntu 22.04+ · GNOME Shell 45+
 
 ```bash
-git clone https://github.com/quentin-hoa/Claude_usage_extension_Ubuntu.git
+git clone https://github.com/quentin-hoa/Claude_usage_extension.git
 cd Claude_usage_extension_Ubuntu
 bash ubuntu/install.sh
 ```
