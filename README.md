@@ -57,20 +57,20 @@ Manage usage on claude.ai
 
 ## Installation
 
-### Ubuntu / GNOME (GNOME Shell 45+)
+### Ubuntu / GNOME
 
-**Requirements:** Ubuntu 22.04+ · GNOME Shell 45 or 46
+**Requirements:** Ubuntu 22.04+ · GNOME Shell 45+
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Claude_usage_extension_Ubuntu.git
+git clone https://github.com/quentin-hoa/Claude_usage_extension_Ubuntu.git
 cd Claude_usage_extension_Ubuntu
 bash ubuntu/install.sh
 ```
 
-Then reload GNOME Shell:
+The script checks for GNOME Shell, verifies Claude credentials, and installs the extension files. Then reload GNOME Shell:
 
-- **X11 session:** Press `Alt + F2`, type `r`, press `Enter`
-- **Wayland session:** Log out and log back in
+- **X11:** Press `Alt + F2`, type `r`, press `Enter`
+- **Wayland:** Log out and log back in
 
 Enable the extension:
 
@@ -82,36 +82,36 @@ The `◆ 50% | 5%` indicator appears in the top-right panel. Click to open the u
 
 ---
 
-### macOS (via xbar or SwiftBar)
+### macOS (via xbar)
 
-**Requirements:** macOS 11+ · [xbar](https://xbarapp.com/) **or** [SwiftBar](https://swiftbar.app/) installed
-
-Both xbar and SwiftBar are supported — the plugin format is compatible with both.
+**Requirements:** macOS 11+ · [xbar](https://xbarapp.com/)
 
 ```bash
-# Install xbar (recommended)
+# 1. Install xbar
 brew install --cask xbar
-# OR: brew install --cask swiftbar
 
-# Open xbar/SwiftBar once to initialise the plugins folder, then:
-git clone https://github.com/YOUR_USERNAME/Claude_usage_extension_Ubuntu.git
+# 2. Open xbar once — this creates the plugins folder
+open /Applications/xbar.app
+
+# 3. Clone and install
+git clone https://github.com/quentin-hoa/Claude_usage_extension_Ubuntu.git
 cd Claude_usage_extension_Ubuntu
 bash macos/install.sh
 ```
 
-Refresh: click any menu bar item → **Refresh All** (xbar) or **Refresh Plugin** (SwiftBar).
+Refresh: click any menu bar item → **Refresh All**.
 
 The `◆ 50% · 5%` indicator appears in your macOS menu bar.  
-*(Note: `·` is used as separator — xbar reserves `|` for its own attribute syntax.)*
+*(Note: `·` separator — xbar reserves `|` for its own attribute syntax.)*
 
 ---
 
 ### Windows (system tray)
 
-**Requirements:** Windows 10/11 · Python 3.8+ from [python.org](https://python.org) (not the Windows Store version)
+**Requirements:** Windows 10/11 · Python 3.8+ from [python.org](https://python.org) *(not the Windows Store version)*
 
 ```batch
-git clone https://github.com/YOUR_USERNAME/Claude_usage_extension_Ubuntu.git
+git clone https://github.com/quentin-hoa/Claude_usage_extension_Ubuntu.git
 cd Claude_usage_extension_Ubuntu
 windows\install.bat
 ```
@@ -119,7 +119,7 @@ windows\install.bat
 The install script:
 1. Installs `pystray` and `Pillow` via pip
 2. Copies `fetch_usage.py` to `%USERPROFILE%\.local\share\claude-usage-stats\`
-3. Creates a startup `.vbs` entry so the tray icon launches automatically on login
+3. Creates a startup `.vbs` shortcut so the tray icon launches automatically on login
 
 To start immediately without rebooting:
 
@@ -127,10 +127,10 @@ To start immediately without rebooting:
 pythonw windows\claude_usage_tray.py
 ```
 
-Right-click the tray icon to see usage stats or open `claude.ai/settings/usage`.
+Right-click the tray icon to see usage stats.
 
 > **Note:** Keep the cloned repo folder in place — the startup shortcut points to it.  
-> On Windows, credentials are read from `%USERPROFILE%\.claude\.credentials.json`.
+> Credentials are read from `%USERPROFILE%\.claude\.credentials.json`.
 
 ---
 
