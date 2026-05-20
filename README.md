@@ -62,8 +62,8 @@ Manage usage on claude.ai
 **Requirements:** Ubuntu 22.04+ · GNOME Shell 45+
 
 ```bash
-git clone https://github.com/quentin-hoa/Claude_usage_extension.git
-cd Claude_usage_extension_Ubuntu
+git clone git@github.com:quentin-hoa/Claude_usage_extension.git
+cd Claude_usage_extension
 bash ubuntu/install.sh
 ```
 
@@ -94,8 +94,8 @@ brew install --cask xbar
 open /Applications/xbar.app
 
 # 3. Clone and install
-git clone https://github.com/quentin-hoa/Claude_usage_extension.git
-cd Claude_usage_extension_Ubuntu
+git clone git@github.com:quentin-hoa/Claude_usage_extension.git
+cd Claude_usage_extension
 bash macos/install.sh
 ```
 
@@ -111,8 +111,8 @@ The `◆ 50% · 5%` indicator appears in your macOS menu bar.
 **Requirements:** Windows 10/11 · Python 3.8+ from [python.org](https://python.org) *(not the Windows Store version)*
 
 ```batch
-git clone https://github.com/quentin-hoa/Claude_usage_extension.git
-cd Claude_usage_extension_Ubuntu
+git clone git@github.com:quentin-hoa/Claude_usage_extension.git
+cd Claude_usage_extension
 windows\install.bat
 ```
 
