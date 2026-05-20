@@ -94,7 +94,7 @@ brew install --cask xbar
 open /Applications/xbar.app
 
 # 3. Clone and install
-git clone https://github.com/quentin-hoa/Claude_usage_extension_Ubuntu.git
+git clone https://github.com/quentin-hoa/Claude_usage_extension.git
 cd Claude_usage_extension_Ubuntu
 bash macos/install.sh
 ```
@@ -111,7 +111,7 @@ The `◆ 50% · 5%` indicator appears in your macOS menu bar.
 **Requirements:** Windows 10/11 · Python 3.8+ from [python.org](https://python.org) *(not the Windows Store version)*
 
 ```batch
-git clone https://github.com/quentin-hoa/Claude_usage_extension_Ubuntu.git
+git clone https://github.com/quentin-hoa/Claude_usage_extension.git
 cd Claude_usage_extension_Ubuntu
 windows\install.bat
 ```
